@@ -1,0 +1,27 @@
+[
+  {
+    "id": "1",
+    "title": "Refund Policy",
+    "content": "Students can request a refund within 30 days of fee payment. Refunds are processed within 7 working days."
+  },
+  {
+    "id": "2",
+    "title": "Attendance Policy",
+    "content": "Students must maintain at least 75 percent attendance to appear for final examinations."
+  },
+  {
+    "id": "3",
+    "title": "Library Rules",
+    "content": "Books can be borrowed for 14 days. Late returns incur a fine of 5 rupees per day."
+  },
+  {
+    "id": "4",
+    "title": "Hostel Policy",
+    "content": "Hostel gates close at 10 PM. Students must carry ID cards at all times."
+  },
+  {
+    "id": "5",
+    "title": "Exam Guidelines",
+    "content": "Students must bring hall tickets and arrive 30 minutes before exam time."
+  }
+]
