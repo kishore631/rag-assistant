@@ -127,7 +127,7 @@ rag-assistant/
 └── README.md
 ⚙️ Installation & Setup
 1️⃣ Clone Repository
-git clone https://github.com/your-username/rag-assistant.git
+git clone https://github.com/kishore631/rag-assistant.git
 cd rag-assistant
 2️⃣ Backend Setup
 cd backend
