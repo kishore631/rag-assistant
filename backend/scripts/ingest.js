@@ -1,67 +1,34 @@
-import { pipeline } from '@xenova/transformers';
-import fs from 'fs';
+import fs from "fs";
+import { getEmbedding } from "../utils/embed.js";
 
-let embedder;
-
-// Load model once
-async function loadModel() {
-  if (!embedder) {
-    console.log("Loading embedding model...");
-    embedder = await pipeline(
-      'feature-extraction',
-      'Xenova/all-MiniLM-L6-v2'
-    );
-    console.log("Model loaded successfully!");
-  }
-}
-
-// Generate embedding
-async function getEmbedding(text) {
-  await loadModel();
-
-  const output = await embedder(text, {
-    pooling: 'mean',
-    normalize: true
-  });
-
-  return Array.from(output.data);
-}
-
-// Example documents
-const documents = [
-  {
-    title: "Refund Policy",
-    content: "Students can request a refund within 30 days of fee payment."
-  },
-  {
-    title: "Exam Guidelines",
-    content: "Students must carry their ID card during examinations."
-  }
-];
-
-// Main function
 async function run() {
-  console.log("Starting ingestion process...\n");
+  console.log("Starting ingestion...\n");
+
+  const docs = JSON.parse(
+    fs.readFileSync("data/docs.json", "utf-8")
+  );
 
   const vectorStore = [];
 
-  for (const doc of documents) {
+  for (const doc of docs) {
     const embedding = await getEmbedding(doc.content);
 
-    console.log(`Embedded: ${doc.title}`);
-    console.log(`Vector length: ${embedding.length}\n`);
-
     vectorStore.push({
+      id: doc.id,
       title: doc.title,
       content: doc.content,
       embedding
     });
+
+    console.log(`Embedded: ${doc.title}`);
   }
 
-  // Save locally
-  fs.writeFileSync("vectorStore.json", JSON.stringify(vectorStore, null, 2));
+  fs.writeFileSync(
+    "data/vector_store.json",
+    JSON.stringify(vectorStore, null, 2)
+  );
 
-  console.log("✅ Vector store created successfully!");
+  console.log("\n✅ Vector store created successfully!");
 }
 
 run();

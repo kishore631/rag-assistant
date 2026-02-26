@@ -13,56 +13,63 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "Query is required" });
     }
 
-    // Handle greetings separately
     const greetings = ["hi", "hello", "hey", "hii"];
+
     if (greetings.includes(query.toLowerCase())) {
       return res.json({
         answer: "Hello! 👋 Ask me something about exam rules or refund policy.",
         source: null,
-        similarity: null,
+        similarity: null
       });
     }
 
-    // Load vector store
     const vectorStore = JSON.parse(
-      fs.readFileSync("vectorStore.json", "utf-8")
+      fs.readFileSync("data/vector_store.json", "utf-8")
     );
 
-    // Get query embedding
     const queryEmbedding = await getEmbedding(query);
 
-    let bestMatch = null;
-    let highestScore = -1;
+    let scoredDocs = [];
 
     for (const doc of vectorStore) {
-      const score = cosineSimilarity(queryEmbedding, doc.embedding);
+      let cosineScore = cosineSimilarity(queryEmbedding, doc.embedding);
 
-      if (score > highestScore) {
-        highestScore = score;
-        bestMatch = doc;
+      const queryWords = Object.keys(queryEmbedding);
+      const titleWords = doc.title.toLowerCase().split(" ");
+
+      let boost = 0;
+
+      for (let word of queryWords) {
+        if (titleWords.includes(word)) {
+          boost += 0.15;
+        }
       }
-    }
 
-    console.log("Query:", query);
-    console.log("Best match:", bestMatch?.title);
-    console.log("Similarity:", highestScore);
+      let finalScore = Math.min(cosineScore + boost, 1);
 
-    // If similarity is very low
-    if (highestScore < 0.40) {
-      return res.json({
-        answer:
-          "I may not have exact information about that. Based on available documents, here is the closest match:\n\n" +
-          bestMatch.content,
-        source: bestMatch.title,
-        similarity: highestScore,
+      scoredDocs.push({
+        ...doc,
+        score: finalScore
       });
     }
 
-    // Normal response
+    scoredDocs.sort((a, b) => b.score - a.score);
+
+    const bestMatch = scoredDocs[0];
+    const highestScore = bestMatch?.score || 0;
+
+    if (!bestMatch || highestScore < 0.15) {
+      return res.json({
+        answer: "I couldn't find relevant information in available documents.",
+        source: null,
+        similarity: 0
+      });
+    }
+
     return res.json({
       answer: bestMatch.content,
       source: bestMatch.title,
-      similarity: highestScore,
+      similarity: Number((highestScore * 100).toFixed(2))
     });
 
   } catch (error) {
